@@ -13,6 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class NFCSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = NFC
         fields = '__all__'
