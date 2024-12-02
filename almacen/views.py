@@ -10,6 +10,9 @@ import json
 from .serializer import ProductSerializer, CategorySerializer, NFCSerializer, StockMovementSerializer, RFIDSerializer 
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+import boto3
+import os
+
 # create view for the index page
 # create a view for pruducts page
 # create a view for the product detail page
