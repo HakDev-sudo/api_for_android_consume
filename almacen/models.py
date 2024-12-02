@@ -59,7 +59,7 @@ def upload_to_producto(instance, filename):
     
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    img = models.ImageField(upload_to='imagenes/', null=True, blank=True)
+    img = models.ImageField(upload_to='', null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.PROTECT)  # Protege la categoría
