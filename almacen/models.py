@@ -5,6 +5,8 @@ from PIL import Image
 import uuid
 import os
 from django.utils.text import slugify
+from appstore.storage_backends import PublicMediaStorage
+
 
 # Función para generar la ruta de subida de imágenes de categorías
 def upload_to_category(instance, filename):
@@ -31,7 +33,7 @@ def upload_to_user(instance, filename):
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    img = models.ImageField(upload_to=upload_to_category, null=True, blank=True)
+    img = models.ImageField( storage=PublicMediaStorage()  ,upload_to=upload_to_category, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -59,7 +61,7 @@ def upload_to_producto(instance, filename):
     
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    img = models.ImageField(upload_to='', null=True, blank=True)
+    img = models.ImageField(storage=PublicMediaStorage(),  upload_to='', null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.PROTECT)  # Protege la categoría
@@ -67,22 +69,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
     
-    def save(self, *args, **kwargs):
-        # Llama al método `save` original para guardar el objeto y la imagen
-        super().save(*args, **kwargs)
-
-        # Redimensionar la imagen si existe
-        if self.img:
-            with Image.open(self.img.path) as img:
-                # Convierte a modo RGB si es necesario (para evitar errores con ciertos formatos)
-                if img.mode in ("RGBA", "P"):
-                    img = img.convert("RGB")
-
-                # Redimensiona la imagen manteniendo la proporción
-                img.thumbnail((800, 800))
-
-                # Guarda la imagen redimensionada
-                img.save(self.img.path)
+    
     @property
     def stock(self):
         # Calcula el stock sumando las entradas y restando las salidas en los movimientos
@@ -94,7 +81,7 @@ class User(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     password = models.CharField(max_length=50)
-    img = models.ImageField(upload_to=upload_to_user, null=True, blank=True)
+    img = models.ImageField( storage=PublicMediaStorage(), upload_to=upload_to_user, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -145,3 +132,8 @@ class StockMovement(models.Model):
 
     def __str__(self):
         return f'{self.movement_type} - {self.product.name} - {self.quantity}'
+
+class Upload(models.Model):
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(storage=PublicMediaStorage())
+

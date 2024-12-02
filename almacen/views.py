@@ -2,16 +2,21 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .models import Product, Category, RFID, NFC, StockMovement
+from .models import Product, Category, RFID, NFC, StockMovement, User
 # Create your views here.
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .serializer import ProductSerializer, CategorySerializer, NFCSerializer, StockMovementSerializer, RFIDSerializer 
+from .serializer import ProductSerializer, CategorySerializer, NFCSerializer, StockMovementSerializer, RFIDSerializer , UserSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 import boto3
 import os
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render
+
+from .models import Upload
 
 # create view for the index page
 # create a view for pruducts page
@@ -109,3 +114,27 @@ class StockMovementDetailApi(RetrieveUpdateDestroyAPIView):
     queryset = StockMovement.objects.all()
     serializer_class = StockMovementSerializer
     lookup_field = 'id'
+
+
+class UserApi(ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'id'
+
+def image_upload(request):
+    if request.method == 'POST':
+        image_file = request.FILES['image_file']
+        image_type = request.POST['image_type']
+        if settings.USE_SPACES:
+            upload = Upload(file=image_file)
+            upload.save()
+            image_url = upload.file.url
+        else:
+            fs = FileSystemStorage()
+            filename = fs.save(image_file.name, image_file)
+            image_url = fs.url(filename)
+        return render(request, 'upload.html', {
+            'image_url': image_url
+        })
+    return render(request, 'upload.html')
+

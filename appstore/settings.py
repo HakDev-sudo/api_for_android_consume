@@ -4,8 +4,12 @@ from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 import dj_database_url
 import sys
+import logging
+import boto3
 
+logging.basicConfig(level=logging.DEBUG)
 load_dotenv()
+boto3.set_stream_logger('', logging.DEBUG)
 
 
 
@@ -24,11 +28,11 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG =True
 
 #ALLOWED_HOSTS = ['127.0.0.1','172.22.143.204','192.168.18.33']
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+DEVELOPMENT_MODE =True
 
 
 
@@ -78,27 +82,55 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'appstore.wsgi.application'
 
-AWS_ACCESS_KEY_ID ='DO00BYQVMUPN22A6HAFK'
-AWS_SECRET_ACCESS_KEY ='5W7CzjfgD2zlQFkjpdtRDfPgFllr0j17Rz2OybQdfzk'
-AWS_STORAGE_BUCKET_NAME = 'techunterim'
-# AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', 'https://techunterim.nyc3.digitaloceanspaces.com')
-# MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/"
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_ACCESS_KEY_ID ='DO00BYQVMUPN22A6HAFK'
+# AWS_SECRET_ACCESS_KEY = '5W7CzjfgD2zlQFkjpdtRDfPgFllr0j17Rz2OybQdfzk'
+# AWS_STORAGE_BUCKET_NAME = 'techunterim'
+# AWS_S3_ENDPOINT_URL = 'https://nyc3.digitaloceanspaces.com'
+# AWS_S3_OBJECT_PARAMETERS = {
+#     'CacheControl': 'max-age=86400',
+# }
+# AWS_DEFAULT_ACL = 'public-read'
+# #DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-# AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-# AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-#AWS_STORAGE_BUCKET_NAME = 'techunterim'  # Nombre exacto de tu bucket
-AWS_S3_ENDPOINT_URL = 'https://nyc3.digitaloceanspaces.com'
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_LOCATION = 'imagenes'
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_DEFAULT_ACL = 'public-read'
+# AWS_LOCATION = ''
+# STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-# URL para acceder a los medios
-MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+#  # public media settings
+# PUBLIC_MEDIA_LOCATION = 'media'
+
+# # URL para acceder a los medios
+# MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
+# #MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+USE_SPACES =True
+
+
+if USE_SPACES:
+    # settings
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_ENDPOINT_URL = 'https://nyc3.digitaloceanspaces.com'
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    # static settings
+    AWS_LOCATION = 'static'
+    STATIC_URL = f'{AWS_S3_ENDPOINT_URL}/{AWS_LOCATION}/'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    # public media settings
+    PUBLIC_MEDIA_LOCATION = 'media'
+    MEDIA_URL = f'{AWS_S3_ENDPOINT_URL}/{PUBLIC_MEDIA_LOCATION}/'
+    DEFAULT_FILE_STORAGE = 'appstore.storage_backends.PublicMediaStorage'
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'mediafiles'
+
+STATICFILES_DIRS = (BASE_DIR / 'static',)
+
+
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 if DEVELOPMENT_MODE is True:
@@ -149,3 +181,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:1337', 'http://127.0.0.1:1337'
+]

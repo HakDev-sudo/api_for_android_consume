@@ -2,8 +2,12 @@ from django.urls import path
 from .views import esp32_data
 from . import views
 
-
 urlpatterns = [
+    #for users
+
+    path("api/user", views.UserApi.as_view(), name="user_api"),
+
+
     #para recibir los datos del esp32
     path('api/rfid', esp32_data, name='rfid_receive'),
 
@@ -30,4 +34,8 @@ urlpatterns = [
     path('api/stockmovements', views.StockMovementApi.as_view(), name='api-stockmovements'),
     path('api/stockmovement/<int:id>', views.StockMovementDetailApi.as_view(), name='api-stockmovement-detail'),
 
+
+    #prueba
+
+    path('prueba/', views.image_upload, name='upload'  ),
 ]

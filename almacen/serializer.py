@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, RFID, NFC, StockMovement
+from .models import Product, Category, RFID, NFC, StockMovement, User
 
 class ProductSerializer(serializers.ModelSerializer):
     stock = serializers.ReadOnlyField()
@@ -30,4 +30,9 @@ class StockMovementSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StockMovement
+        fields = '__all__'
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
         fields = '__all__'
